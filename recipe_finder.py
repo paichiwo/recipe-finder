@@ -52,12 +52,10 @@ def get_recipe_information(recipe_id, api_key):
 
         soup = BeautifulSoup(recipe_instructions, 'html.parser')
         recipe_instructions_text = soup.get_text()
-
-        recipe_information.append((recipe_title, recipe_instructions_text))
+        return recipe_title, recipe_instructions_text
+        # recipe_information.append((recipe_title, recipe_instructions_text))
     else:
         print("Error: Unable to fetch recipe details.")
-    print(recipe_information)
-    return recipe_information
 
 
 def get_recipe_ingredients(recipe_id, api_key):
@@ -72,12 +70,13 @@ def get_recipe_ingredients(recipe_id, api_key):
     response = requests.get(url, params=params)
 
     if response.status_code == 200:
-        ingredient_data = response.json()
+        ingredient_data = response.json()['ingredients']
 
-        for ingredient in ingredient_data['ingredients']:
+        for ingredient in ingredient_data:
+            name = ingredient['name']
             amount = ingredient['amount']['metric']['value']
             unit = ingredient['amount']['metric']['unit']
-            name = ingredient['name']
+
             ingredients.append((name, amount, unit))
         print(ingredients)
         return ingredients
@@ -91,7 +90,8 @@ def main():
     search_recipes(search_term, key)
     recipe_id = input("Enter id: ")
     get_recipe_ingredients(recipe_id, key)
-    get_recipe_information(recipe_id, key)
+    title, info = get_recipe_information(recipe_id, key)
+    print(title, "\n", info)
 
 
 if __name__ == "__main__":
