@@ -1,5 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
+from tkinter import *
+from PIL import Image
 
 
 def get_api_key():
@@ -92,5 +94,21 @@ def main():
     print(title, "\n", info)
 
 
-if __name__ == "__main__":
-    main()
+root = Tk()
+root.title('Recipe App')
+root.geometry("700x655")
+root.config(bg='black')
+
+background_main_window = PhotoImage(file='RecipeFinder.png')
+background_main_window_label = Label(image=background_main_window)
+background_main_window_label.place(x=0, y=0)
+
+search_button_image = PhotoImage(file='search.png')
+search_button = Button(image=search_button_image, bg='white', borderwidth=0, activebackground='white', command=main)
+search_button.place(x=490, y=118)
+
+search_bar = Entry(font=("Noto Sans", 15), bg='white', width=24, borderwidth=0)
+search_bar.place(x=220, y=118)
+
+root.mainloop()
+
