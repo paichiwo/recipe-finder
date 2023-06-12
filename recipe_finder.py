@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from tkinter import *
-from PIL import Image
+import PySimpleGUI as psg
 
 
 def get_api_key():
@@ -20,7 +19,7 @@ def search_recipes(search_term, api_key):
     params = {
         'apiKey': api_key,
         'query': search_term,
-        'number': 10
+        'number': 20
     }
     response = requests.get(url, params=params)
 
@@ -84,31 +83,52 @@ def get_recipe_ingredients(recipe_id, api_key):
         print("Error: Unable to fetch recipe details.")
 
 
-def main():
-    key = get_api_key()
-    search_term = input("Search: ")
-    print(search_recipes(search_term, key))
-    recipe_id = input("Enter id: ")
-    print(get_recipe_ingredients(recipe_id, key))
-    title, info = get_recipe_information(recipe_id, key)
-    print(title, "\n", info)
+# def recipe_finder():
+#
+#     key = get_api_key()
+#     search_term = values["-SEARCH-TERM"]
+#     print(search_recipes(search_term, key))
+#     recipe_id = input("Enter id: ")
+#     print(get_recipe_ingredients(recipe_id, key))
+#     title, info = get_recipe_information(recipe_id, key)
+#     print(title, "\n", info)
 
 
-root = Tk()
-root.title('Recipe App')
-root.geometry("700x655")
-root.config(bg='black')
+def layouts():
 
-background_main_window = PhotoImage(file='RecipeFinder.png')
-background_main_window_label = Label(image=background_main_window)
-background_main_window_label.place(x=0, y=0)
+    layout = [
+        [psg.VPush()],
+        [psg.Text("Recipe Finder")],
+        [psg.Input(key="-SEARCH-TERM-")],
+        [psg.Button("Search", key="-SEARCH-"), psg.Button("Submit", key="-SUBMIT-", disabled=True)],
+        [psg.Listbox(values=[], size=(40, 10), expand_x=True, key="-LISTBOX-")]
+    ]
 
-search_button_image = PhotoImage(file='search.png')
-search_button = Button(image=search_button_image, bg='white', borderwidth=0, activebackground='white', command=main)
-search_button.place(x=490, y=118)
+    return psg.Window("Recipe Finder", layout, size=(500, 500), element_justification="center")
 
-search_bar = Entry(font=("Noto Sans", 15), bg='white', width=24, borderwidth=0)
-search_bar.place(x=220, y=118)
 
-root.mainloop()
+def main_window():
+    window = layouts()
+    while True:
+        event, values = window.read()
+        if event == psg.WINDOW_CLOSED:
+            break
+        if event == "-SEARCH-":
+            search_term = values["-SEARCH-TERM-"]
+            key = get_api_key()
+            results = search_recipes(search_term, key)
+            recipe_id = [recipe[0] for recipe in results]
+            recipe_names = [recipe[1] for recipe in results]
+            recipe_photo = [recipe[2] for recipe in results]
+            window["-LISTBOX-"].update(values=recipe_names)
+            window["-SUBMIT-"].update(disabled=False)
 
+        if event == "-SUBMIT-":
+            print("dupe")
+
+
+    window.close()
+
+
+if __name__ == "__main__":
+    main_window()
