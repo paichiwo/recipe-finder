@@ -83,17 +83,6 @@ def get_recipe_ingredients(recipe_id, api_key):
         print("Error: Unable to fetch recipe details.")
 
 
-# def recipe_finder():
-#
-#     key = get_api_key()
-#     search_term = values["-SEARCH-TERM"]
-#     print(search_recipes(search_term, key))
-#     recipe_id = input("Enter id: ")
-#     print(get_recipe_ingredients(recipe_id, key))
-#     title, info = get_recipe_information(recipe_id, key)
-#     print(title, "\n", info)
-
-
 def layouts():
 
     layout = [
@@ -108,24 +97,42 @@ def layouts():
 
 
 def main_window():
+
+    recipe_id = []
+    recipe_names = []
+    recipe_photo = []
+
+    key = get_api_key()
+
     window = layouts()
+
     while True:
         event, values = window.read()
         if event == psg.WINDOW_CLOSED:
             break
+
         if event == "-SEARCH-":
             search_term = values["-SEARCH-TERM-"]
-            key = get_api_key()
+
             results = search_recipes(search_term, key)
             recipe_id = [recipe[0] for recipe in results]
             recipe_names = [recipe[1] for recipe in results]
             recipe_photo = [recipe[2] for recipe in results]
+
             window["-LISTBOX-"].update(values=recipe_names)
             window["-SUBMIT-"].update(disabled=False)
 
         if event == "-SUBMIT-":
-            print("dupe")
+            chosen_recipe_name = values["-LISTBOX-"]
 
+            chosen_recipe_index = recipe_names.index(chosen_recipe_name[0])
+
+            chosen_recipe_id = recipe_id[chosen_recipe_index]
+            chosen_recipe_photo = recipe_photo[chosen_recipe_index]
+
+            print(get_recipe_ingredients(chosen_recipe_id, key))
+            print(get_recipe_information(chosen_recipe_id, key))
+            print(chosen_recipe_photo)
 
     window.close()
 
