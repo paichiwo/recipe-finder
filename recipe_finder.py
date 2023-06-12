@@ -86,6 +86,8 @@ def get_recipe_ingredients(recipe_id, api_key):
 def layouts():
 
     layout = [
+        [psg.Image(filename="Layer 1.png"), psg.Listbox(values=[], size=(30, 6), expand_x=True, font="Arial 8", key="-INGREDIENTS-")],
+        [psg.Multiline(size=(30, 5), expand_x=True, key="-INFO-")],
         [psg.VPush()],
         [psg.Text("Recipe Finder")],
         [psg.Input(key="-SEARCH-TERM-")],
@@ -93,7 +95,7 @@ def layouts():
         [psg.Listbox(values=[], size=(40, 10), expand_x=True, key="-LISTBOX-")]
     ]
 
-    return psg.Window("Recipe Finder", layout, size=(500, 500), element_justification="center")
+    return psg.Window("Recipe Finder", layout, size=(500, 600), element_justification="center")
 
 
 def main_window():
@@ -113,8 +115,8 @@ def main_window():
 
         if event == "-SEARCH-":
             search_term = values["-SEARCH-TERM-"]
-
             results = search_recipes(search_term, key)
+
             recipe_id = [recipe[0] for recipe in results]
             recipe_names = [recipe[1] for recipe in results]
             recipe_photo = [recipe[2] for recipe in results]
@@ -124,17 +126,20 @@ def main_window():
 
         if event == "-SUBMIT-":
             chosen_recipe_name = values["-LISTBOX-"]
-
             chosen_recipe_index = recipe_names.index(chosen_recipe_name[0])
 
             chosen_recipe_id = recipe_id[chosen_recipe_index]
             chosen_recipe_photo = recipe_photo[chosen_recipe_index]
 
-            print(get_recipe_ingredients(chosen_recipe_id, key))
-            print(get_recipe_information(chosen_recipe_id, key))
+            ingredients = get_recipe_ingredients(chosen_recipe_id, key)
+            information = get_recipe_information(chosen_recipe_id, key)
+            print(information)
             print(chosen_recipe_photo)
 
+            window["-INGREDIENTS-"].update(ingredients)
+            window["-INFO-"].update(information[1])
     window.close()
+    exit(0)
 
 
 if __name__ == "__main__":
