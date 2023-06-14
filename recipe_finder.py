@@ -9,7 +9,7 @@ from io import BytesIO
 
 def get_api_key():
     """ Get the api key from api_key.txt file."""
-    with open('api_key.txt') as api_file:
+    with open('keys/api_key.txt') as api_file:
         api_key = api_file.read()
     return api_key
 
@@ -75,7 +75,6 @@ def get_recipe_ingredients(recipe_id, api_key):
 
         for ingredient in ingredient_data:
             name = ingredient['name']
-            print(name)
             amount = ingredient['amount']['metric']['value']
             unit = ingredient['amount']['metric']['unit']
             ingredients.append([name, amount, unit])
@@ -135,7 +134,7 @@ def create_window():
             psg.Column(
                 [
                     [psg.VPush()],
-                    [psg.Image(filename="Layer 1.png", key="-THUMBNAIL-")],
+                    [psg.Image(filename="images/dummy.png", key="-THUMBNAIL-")],
                     [psg.Listbox(values=[], size=(45, 5), font="Arial 8", key="-INGREDIENTS-")],
                     [psg.Multiline(size=(38, 9), key="-INFO-")]
                 ],
