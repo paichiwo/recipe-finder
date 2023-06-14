@@ -1,5 +1,4 @@
-#!/usr/bin/python3
-
+import io
 import PySimpleGUI as psg
 import requests
 import os
@@ -10,7 +9,6 @@ from io import BytesIO
 
 def get_api_key():
     """ Get the api key from api_key.txt file."""
-
     with open('api_key.txt') as api_file:
         api_key = api_file.read()
     return api_key
@@ -18,7 +16,6 @@ def get_api_key():
 
 def search_recipes(search_term, api_key):
     """Search for recipes using keyword."""
-
     recipes = []
     url = 'https://api.spoonacular.com/recipes/complexSearch'
     params = {
@@ -43,7 +40,6 @@ def search_recipes(search_term, api_key):
 
 def get_recipe_information(recipe_id, api_key):
     """Fetch the detailed recipe information."""
-
     url = f'https://api.spoonacular.com/recipes/{recipe_id}/information'
     params = {
         'apiKey': api_key,
@@ -66,7 +62,6 @@ def get_recipe_information(recipe_id, api_key):
 
 def get_recipe_ingredients(recipe_id, api_key):
     """Fetch the ingredients for a given recipe ID."""
-
     ingredients = []
     url = f'https://api.spoonacular.com/recipes/{recipe_id}/ingredientWidget.json'
     params = {
@@ -80,9 +75,10 @@ def get_recipe_ingredients(recipe_id, api_key):
 
         for ingredient in ingredient_data:
             name = ingredient['name']
+            print(name)
             amount = ingredient['amount']['metric']['value']
             unit = ingredient['amount']['metric']['unit']
-            ingredients.append((name, amount, unit))
+            ingredients.append([name, amount, unit])
         return ingredients
     else:
         print("Error: Unable to fetch recipe details.")
@@ -90,7 +86,6 @@ def get_recipe_ingredients(recipe_id, api_key):
 
 def create_thumbnail(image_url):
     """Create thumbnail from the URL fetched from API."""
-
     try:
         response = requests.get(image_url)
         response.raise_for_status()
@@ -105,7 +100,18 @@ def create_thumbnail(image_url):
         print(f"Unable to resize image from {image_url}: {e}")
 
 
+def save_to_file(filename, title, information, ingredients):
+    """Save recipe to a txt file."""
+    with open(filename, 'w') as file:
+        file.write(title + '\n\n')  # Write title on a new line
+        for ingredient in ingredients:
+            ingredient_str = [str(item) for item in ingredient]  # Convert float values to string
+            file.write(', '.join(ingredient_str) + '\n')  # Write each ingredient on a new line
+        file.write('\n' + information + '\n')  # Write information on a new line
+
+
 def delete_file(file_path):
+    """Delete file for a given path."""
     try:
         os.remove(file_path)
     except OSError as e:
@@ -114,7 +120,6 @@ def delete_file(file_path):
 
 def create_window():
     """Layout for a main window."""
-
     layout = [
         [
             psg.Column(
@@ -123,7 +128,7 @@ def create_window():
                     [psg.Text("RECIPE FINDER")],
                     [psg.Input(key="-SEARCH-TERM-", size=28), psg.Button("Search", key="-SEARCH-")],
                     [psg.Listbox(values=[], size=(35, 15), key="-LISTBOX-")],
-                    [psg.Push(), psg.Button("Submit", key="-SUBMIT-")]
+                    [psg.Button("Save txt", key="-SAVE-"), psg.Push(), psg.Button("Submit", key="-SUBMIT-")]
                 ],
                 element_justification='center', size=(300, 400)
             ),
@@ -138,7 +143,6 @@ def create_window():
             )
         ]
     ]
-
     return psg.Window("Recipe Finder", layout,
                       size=(640, 400),
                       resizable=True,
@@ -147,7 +151,9 @@ def create_window():
 
 def main():
     """Main function with all logic."""
-
+    chosen_recipe_name = []
+    information = ""
+    ingredients = []
     recipe_id = []
     recipe_names = []
     recipe_photo = []
@@ -161,7 +167,6 @@ def main():
             break
 
         if event == "-SEARCH-":
-
             search_term = values["-SEARCH-TERM-"]
             results = search_recipes(search_term, key)
 
@@ -187,6 +192,11 @@ def main():
             window["-INFO-"].update(information[1])
             window["-THUMBNAIL-"].update("thumb.png")
             delete_file("thumb.png")
+
+        if event == "-SAVE-":
+            folder = psg.PopupGetFolder(message="Where do you want to save the file?")
+            filename = psg.popup_get_text(message="filename")
+            save_to_file(os.path.join(folder, filename), chosen_recipe_name[0], information[1], ingredients)
 
     window.close()
     exit(0)
