@@ -116,17 +116,33 @@ def create_window():
     """Layout for a main window."""
 
     layout = [
-        [psg.Image(filename="Layer 1.png", key="-THUMBNAIL-"),
-         psg.Listbox(values=[], size=(30, 6), expand_x=True, font="Arial 8", key="-INGREDIENTS-")],
-        [psg.Multiline(size=(30, 5), expand_x=True, key="-INFO-")],
-        [psg.VPush()],
-        [psg.Text("Recipe Finder")],
-        [psg.Input(key="-SEARCH-TERM-")],
-        [psg.Button("Search", key="-SEARCH-"), psg.Button("Submit", key="-SUBMIT-", disabled=True)],
-        [psg.Listbox(values=[], size=(40, 10), expand_x=True, key="-LISTBOX-")]
+        [
+            psg.Column(
+                [
+                    [psg.VPush()],
+                    [psg.Text("RECIPE FINDER")],
+                    [psg.Input(key="-SEARCH-TERM-", size=28), psg.Button("Search", key="-SEARCH-")],
+                    [psg.Listbox(values=[], size=(35, 15), key="-LISTBOX-")],
+                    [psg.Push(), psg.Button("Submit", key="-SUBMIT-")]
+                ],
+                element_justification='center', size=(300, 400)
+            ),
+            psg.Column(
+                [
+                    [psg.VPush()],
+                    [psg.Image(filename="Layer 1.png", key="-THUMBNAIL-")],
+                    [psg.Listbox(values=[], size=(45, 5), font="Arial 8", key="-INGREDIENTS-")],
+                    [psg.Multiline(size=(38, 9), key="-INFO-")]
+                ],
+                element_justification='center', size=(300, 400)
+            )
+        ]
     ]
 
-    return psg.Window("Recipe Finder", layout, size=(500, 600), element_justification="center")
+    return psg.Window("Recipe Finder", layout,
+                      size=(640, 400),
+                      resizable=True,
+                      element_justification="center")
 
 
 def main():
