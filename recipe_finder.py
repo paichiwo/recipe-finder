@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import PySimpleGUI as psg
+from PIL import Image
+from io import BytesIO
 
 
 def get_api_key():
@@ -83,10 +85,35 @@ def get_recipe_ingredients(recipe_id, api_key):
         print("Error: Unable to fetch recipe details.")
 
 
-def layouts():
+def create_thumbnail(image_url):
+
+    try:
+        # Download the image from the URL
+        response = requests.get(image_url)
+        response.raise_for_status()
+
+        with Image.open(BytesIO(response.content)) as image:
+            # Resize the image while maintaining an aspect ratio
+            image.thumbnail((156, 116))
+
+            # Convert the image to RGB mode if it's not already
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+
+            # Save the resized image as PNG
+            image.save("thumb.png", 'PNG')
+
+            print(f"Resized image saved.")
+
+    except (requests.HTTPError, IOError) as e:
+        print(f"Unable to resize image from {image_url}: {e}")
+
+
+def create_window():
 
     layout = [
-        [psg.Image(filename="Layer 1.png"), psg.Listbox(values=[], size=(30, 6), expand_x=True, font="Arial 8", key="-INGREDIENTS-")],
+        [psg.Image(filename="Layer 1.png", key="-THUMBNAIL-"),
+         psg.Listbox(values=[], size=(30, 6), expand_x=True, font="Arial 8", key="-INGREDIENTS-")],
         [psg.Multiline(size=(30, 5), expand_x=True, key="-INFO-")],
         [psg.VPush()],
         [psg.Text("Recipe Finder")],
@@ -98,15 +125,14 @@ def layouts():
     return psg.Window("Recipe Finder", layout, size=(500, 600), element_justification="center")
 
 
-def main_window():
+def main():
 
     recipe_id = []
     recipe_names = []
     recipe_photo = []
 
     key = get_api_key()
-
-    window = layouts()
+    window = create_window()
 
     while True:
         event, values = window.read()
@@ -130,17 +156,18 @@ def main_window():
 
             chosen_recipe_id = recipe_id[chosen_recipe_index]
             chosen_recipe_photo = recipe_photo[chosen_recipe_index]
+            create_thumbnail(chosen_recipe_photo)
 
             ingredients = get_recipe_ingredients(chosen_recipe_id, key)
             information = get_recipe_information(chosen_recipe_id, key)
-            print(information)
-            print(chosen_recipe_photo)
 
             window["-INGREDIENTS-"].update(ingredients)
             window["-INFO-"].update(information[1])
+            window["-THUMBNAIL-"].update("thumb.png")
+
     window.close()
     exit(0)
 
 
 if __name__ == "__main__":
-    main_window()
+    main()
