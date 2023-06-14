@@ -102,12 +102,12 @@ def create_thumbnail(image_url):
 
 def save_to_file(filename, title, information, ingredients):
     """Save recipe to a txt file."""
-    with open(filename, 'w') as file:
-        file.write(title + '\n\n')  # Write title on a new line
+    with open(filename + ".txt", 'w') as file:
+        file.write(title + '\n\n')
         for ingredient in ingredients:
-            ingredient_str = [str(item) for item in ingredient]  # Convert float values to string
-            file.write(', '.join(ingredient_str) + '\n')  # Write each ingredient on a new line
-        file.write('\n' + information + '\n')  # Write information on a new line
+            ingredient_str = [str(item) for item in ingredient]
+            file.write(', '.join(ingredient_str) + '\n')
+        file.write('\n' + information + '\n')
 
 
 def delete_file(file_path):
@@ -128,7 +128,7 @@ def create_window():
                     [psg.Text("RECIPE FINDER")],
                     [psg.Input(key="-SEARCH-TERM-", size=28), psg.Button("Search", key="-SEARCH-")],
                     [psg.Listbox(values=[], size=(35, 15), key="-LISTBOX-")],
-                    [psg.Button("Save txt", key="-SAVE-"), psg.Push(), psg.Button("Submit", key="-SUBMIT-")]
+                    [psg.Button("Save txt", key="-SAVE-"), psg.Push(), psg.Button("Show", key="-SUBMIT-")]
                 ],
                 element_justification='center', size=(300, 400)
             ),
@@ -150,7 +150,7 @@ def create_window():
 
 
 def main():
-    """Main function with all logic."""
+    """Main function with all the logic."""
     chosen_recipe_name = []
     information = ""
     ingredients = []
@@ -168,8 +168,10 @@ def main():
 
         if event == "-SEARCH-":
             search_term = values["-SEARCH-TERM-"]
-            results = search_recipes(search_term, key)
-
+            try:
+                results = search_recipes(search_term, key)
+            except requests.exceptions.ConnectionError:
+                results = search_recipes(search_term, key)
             recipe_id = [recipe[0] for recipe in results]
             recipe_names = [recipe[1] for recipe in results]
             recipe_photo = [recipe[2] for recipe in results]
