@@ -1,6 +1,9 @@
-import requests
-from bs4 import BeautifulSoup
+#!/usr/bin/python3
+
 import PySimpleGUI as psg
+import requests
+import os
+from bs4 import BeautifulSoup
 from PIL import Image
 from io import BytesIO
 
@@ -86,30 +89,31 @@ def get_recipe_ingredients(recipe_id, api_key):
 
 
 def create_thumbnail(image_url):
+    """Create thumbnail from the URL fetched from API."""
 
     try:
-        # Download the image from the URL
         response = requests.get(image_url)
         response.raise_for_status()
-
         with Image.open(BytesIO(response.content)) as image:
-            # Resize the image while maintaining an aspect ratio
             image.thumbnail((156, 116))
 
-            # Convert the image to RGB mode if it's not already
             if image.mode != 'RGB':
                 image = image.convert('RGB')
-
-            # Save the resized image as PNG
             image.save("thumb.png", 'PNG')
-
-            print(f"Resized image saved.")
 
     except (requests.HTTPError, IOError) as e:
         print(f"Unable to resize image from {image_url}: {e}")
 
 
+def delete_file(file_path):
+    try:
+        os.remove(file_path)
+    except OSError as e:
+        print(f"Error occurred while deleting file {file_path}: {e}")
+
+
 def create_window():
+    """Layout for a main window."""
 
     layout = [
         [psg.Image(filename="Layer 1.png", key="-THUMBNAIL-"),
@@ -126,6 +130,7 @@ def create_window():
 
 
 def main():
+    """Main function with all logic."""
 
     recipe_id = []
     recipe_names = []
@@ -140,6 +145,7 @@ def main():
             break
 
         if event == "-SEARCH-":
+
             search_term = values["-SEARCH-TERM-"]
             results = search_recipes(search_term, key)
 
@@ -156,14 +162,15 @@ def main():
 
             chosen_recipe_id = recipe_id[chosen_recipe_index]
             chosen_recipe_photo = recipe_photo[chosen_recipe_index]
-            create_thumbnail(chosen_recipe_photo)
 
+            create_thumbnail(chosen_recipe_photo)
             ingredients = get_recipe_ingredients(chosen_recipe_id, key)
             information = get_recipe_information(chosen_recipe_id, key)
 
             window["-INGREDIENTS-"].update(ingredients)
             window["-INFO-"].update(information[1])
             window["-THUMBNAIL-"].update("thumb.png")
+            delete_file("thumb.png")
 
     window.close()
     exit(0)
